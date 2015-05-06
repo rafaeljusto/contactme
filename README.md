@@ -47,21 +47,39 @@ http://github.com/rafaeljusto/contactme
 <html>
   <head>
     <meta charset="utf-8"></meta>
+    <style>
+      input {
+        display: block;
+        margin-bottom: 20px;
+      }
+
+      input[type=submit] {
+        margin: 20px auto 0px auto;
+      }
+
+      label {
+        display: block;
+      }
+    </style>
   </head>
   <body>
     <form id="contactme">
-      <label for="name">Name</label><br/>
-      <input type="text" id="name" name="name" />
-      <br/><br/>
-      <label for="email">E-mail</label><br/>
-      <input type="email" id="email" name="email" />
-      <br/><br/>
-      <label for="subject">Subject</label><br/>
-      <input type="text" id="subject" name="subject" />
-      <br/><br/>
-      <label for="message">Message</label><br/>
-      <textarea id="message" name="message" rows="10"></textarea>
-      <br/><br/>
+      <fieldset>
+        <legend>Contact Me</legend>
+
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" />
+
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" />
+
+        <label for="subject">Subject</label>
+        <input type="text" id="subject" name="subject" />
+
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="10" cols="80"></textarea>
+      </fieldset>
+
       <input type="submit" value="Send" />
     </form>
 
