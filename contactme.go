@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/codegangsta/cli"
+	"github.com/rafaeljusto/contactme/Godeps/_workspace/src/github.com/codegangsta/cli"
 )
 
 var (
