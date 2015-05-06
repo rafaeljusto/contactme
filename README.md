@@ -23,6 +23,7 @@ Expect a POST request containing the fields:
 | Status | Description                          |
 | ------ | -----------                          |
 | 200    | E-mail sent                          |
+| 400    | Invalid client e-mail format         |
 | 405    | Only POST requests are allowed       |
 | 427    | Client already sent too many e-mails |
 | 500    | Something went wrong in server-side  |

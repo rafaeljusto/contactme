@@ -7,6 +7,7 @@ import (
 	"math"
 	"net"
 	"net/http"
+	"net/mail"
 	"net/smtp"
 	"os"
 	"strconv"
@@ -108,9 +109,15 @@ func main() {
 		}
 
 		if mailserver == "" || mailbox == "" {
-			fmt.Println("Missing “mailserver” and/or “mailbox” arguments")
+			fmt.Println("Missing “mailserver” and/or “mailbox” arguments\n")
 			cli.ShowAppHelp(c)
 			os.Exit(1)
+		}
+
+		if _, err := mail.ParseAddress(mailbox); err != nil {
+			fmt.Println("Invalid “mailbox”!\n")
+			cli.ShowAppHelp(c)
+			os.Exit(2)
 		}
 
 		http.HandleFunc("/", handle)
@@ -154,6 +161,11 @@ func handle(w http.ResponseWriter, r *http.Request) {
 E-mail sent via ContactMe.
 http://github.com/rafaeljusto/contactme
 		`, name, r.FormValue("message"))
+
+	if _, err := mail.ParseAddress(email); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	header := make(map[string]string)
 	header["From"] = email
