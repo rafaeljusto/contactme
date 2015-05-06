@@ -15,6 +15,7 @@ Expect a POST request containing the fields:
 
 ## Rate Limit
 
+* Use the [token bucket](http://en.wikipedia.org/wiki/Token_bucket) strategy
 * Rate limit per IP fixed in 5 e-mails per day (burst)
 * Cleanup for entries older than a day (goroutine running every 5 minutes)
 
