@@ -196,12 +196,12 @@ http://github.com/rafaeljusto/contactme
 }
 
 func grant(ip string) (bool, error) {
-	now := time.Now().UTC()
-	lastEvent := time.Now().UTC()
-
 	ratelimitLock.RLock()
 	ratelimitItem := ratelimit[ip]
 	ratelimitLock.RUnlock()
+
+	now := time.Now().UTC()
+	lastEvent := now
 
 	if last, ok := ratelimitItem["last"]; ok {
 		var err error
@@ -225,6 +225,7 @@ func grant(ip string) (bool, error) {
 	}
 
 	answer := false
+
 	if level >= 1.0 {
 		level -= 1.0
 		answer = true
