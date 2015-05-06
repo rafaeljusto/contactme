@@ -29,7 +29,18 @@ Expect a POST request containing the fields:
 | 427    | Client already sent too many e-mails |
 | 500    | Something went wrong in server-side  |
 
-## Example
+## E-mail template
+
+```
+Client: <client's name>
+-------------------------------------
+<message>
+-------------------------------------
+E-mail sent via ContactMe.
+http://github.com/rafaeljusto/contactme
+```
+
+## Client example
 
 ```html
 <!doctype html>
