@@ -10,6 +10,7 @@ import (
 	"net/mail"
 	"net/smtp"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -18,48 +19,33 @@ import (
 	"github.com/rafaeljusto/contactme/Godeps/_workspace/src/github.com/codegangsta/cli"
 )
 
+const (
+	burst        = 5.0
+	rate         = 0.00035
+	cleanupSleep = 5 // minutes
+
+	subjectPrefix = "[ContactMe] "
+	template      = `Client: %s
+-------------------------------------
+%s
+-------------------------------------
+
+E-mail sent via ContactMe.
+http://github.com/rafaeljusto/contactme`
+)
+
 var (
 	mailserver, username, password, mailbox string
 
 	ratelimit     map[string]map[string]string
 	ratelimitLock sync.RWMutex
 
-	burst = 5.0
-	rate  = 0.00035
+	undesiredChars = regexp.MustCompile(`(['<>])|\\"|[^\x09\x0A\x0D\x20-\x7E\xA1-\xFF]`)
 )
 
 func init() {
 	ratelimit = make(map[string]map[string]string)
-
-	go func() {
-		for {
-			newRatelimit := make(map[string]map[string]string)
-			now := time.Now()
-
-			ratelimitLock.Lock()
-			for ip, ratelimitItem := range ratelimit {
-				last, ok := ratelimitItem["last"]
-				if !ok {
-					newRatelimit[ip] = ratelimitItem
-					continue
-				}
-
-				lastEvent, err := time.Parse(time.RFC3339Nano, last)
-				if err != nil {
-					newRatelimit[ip] = ratelimitItem
-					continue
-				}
-
-				if now.Sub(lastEvent) <= time.Duration(24)*time.Hour {
-					newRatelimit[ip] = ratelimitItem
-				}
-			}
-			ratelimit = newRatelimit
-			ratelimitLock.Unlock()
-
-			time.Sleep(5 * time.Minute)
-		}
-	}()
+	go cleanup()
 }
 
 func main() {
@@ -73,7 +59,7 @@ func main() {
 		cli.StringFlag{
 			Name:   "port",
 			EnvVar: "CONTACTME_PORT",
-			Usage:  "Port to listen to",
+			Usage:  "Port to listen to (default 80)",
 		},
 		cli.StringFlag{
 			Name:   "mailserver,s",
@@ -138,7 +124,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 
 	ip, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
-		log.Println(err)
+		log.Println("invalid remote address. Details:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -148,39 +134,50 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		return
 
 	} else if err != nil {
-		log.Println(err)
+		log.Println("error in rate limit. Details:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	name := r.FormValue("name")
-	email := r.FormValue("email")
-	subject := r.FormValue("subject")
-	body := fmt.Sprintf(`Client: %s
--------------------------------------
-%s
--------------------------------------
-
-E-mail sent via ContactMe.
-http://github.com/rafaeljusto/contactme
-		`, name, r.FormValue("message"))
-
-	if _, err := mail.ParseAddress(email); err != nil {
+	from, subject, body, err := readInputs(r)
+	if err != nil {
+		log.Printf("invalid input from “%s”. Details: %s", ip, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	header := make(map[string]string)
-	header["From"] = email
-	header["To"] = mailbox
-	header["Subject"] = "[ContactMe] " + subject
-	header["MIME-Version"] = "1.0"
-	header["Content-Type"] = "text/plain; charset=\"utf-8\""
-	header["Content-Transfer-Encoding"] = "base64"
+	if err := sendEmail(from, subject, body); err != nil {
+		log.Println("error sending e-mail. Details:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
-	message := ""
-	for k, v := range header {
-		message += fmt.Sprintf("%s: %s\r\n", k, v)
+	w.WriteHeader(http.StatusOK)
+}
+
+func readInputs(r *http.Request) (from, subject, body string, err error) {
+	name := normalizeInput(r.FormValue("name"))
+	from = normalizeInput(r.FormValue("email"))
+	subject = normalizeInput(r.FormValue("subject"))
+	body = fmt.Sprintf(template, name, normalizeInput(r.FormValue("message")))
+
+	_, err = mail.ParseAddress(from)
+	return
+}
+
+func sendEmail(from, subject, body string) error {
+	header := map[string]string{
+		"From":                      from,
+		"To":                        mailbox,
+		"Subject":                   subjectPrefix + subject,
+		"MIME-Version":              "1.0",
+		"Content-Type":              `text/plain; charset="utf-8"`,
+		"Content-Transfer-Encoding": "base64",
+	}
+
+	var message string
+	for key, value := range header {
+		message += fmt.Sprintf("%s: %s\r\n", key, value)
 	}
 	message += "\r\n" + base64.StdEncoding.EncodeToString([]byte(body))
 
@@ -189,13 +186,19 @@ http://github.com/rafaeljusto/contactme
 		auth = smtp.PlainAuth("", username, password, mailserver[:strings.Index(mailserver, ":")])
 	}
 
-	if err := smtp.SendMail(mailserver, auth, email, []string{mailbox}, []byte(message)); err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
+	return smtp.SendMail(
+		mailserver,
+		auth,
+		from,
+		[]string{mailbox},
+		[]byte(message),
+	)
+}
 
-	} else {
-		w.WriteHeader(http.StatusOK)
-	}
+func normalizeInput(input string) string {
+	input = strings.TrimSpace(input)
+	input = undesiredChars.ReplaceAllString(input, "")
+	return input
 }
 
 func grant(ip string) (bool, error) {
@@ -246,4 +249,34 @@ func grant(ip string) (bool, error) {
 	ratelimitLock.Unlock()
 
 	return answer, nil
+}
+
+func cleanup() {
+	for {
+		newRatelimit := make(map[string]map[string]string)
+		now := time.Now()
+
+		ratelimitLock.Lock()
+		for ip, ratelimitItem := range ratelimit {
+			last, ok := ratelimitItem["last"]
+			if !ok {
+				newRatelimit[ip] = ratelimitItem
+				continue
+			}
+
+			lastEvent, err := time.Parse(time.RFC3339Nano, last)
+			if err != nil {
+				newRatelimit[ip] = ratelimitItem
+				continue
+			}
+
+			if now.Sub(lastEvent) <= time.Duration(24)*time.Hour {
+				newRatelimit[ip] = ratelimitItem
+			}
+		}
+		ratelimit = newRatelimit
+		ratelimitLock.Unlock()
+
+		time.Sleep(cleanupSleep * time.Minute)
+	}
 }

@@ -2,6 +2,14 @@
 
 Easy way to send an e-mail for your "contact me" web form.
 
+## Features
+
+* Remove undesireble characters (avoid script attacks)
+* Validate client e-mail format
+* Limit the number of e-mails from a client in a specific period
+* E-mail encoded in base64
+* Allow plain authentication with mail server
+
 ## API
 
 Expect a POST request containing the fields:
