@@ -59,12 +59,14 @@ Command line example (without using environment variables):
 # contactme -s smtp.gmail.com:587 -p "crazypassword" -m my@email.com
 ```
 
-Upstart example:
+To use the service with [Upstart](http://en.wikipedia.org/wiki/Upstart) you will need first to edit
+the file "contactme.upstart" and add/change the environment variables with your data. After that
+just generate the Debian package with the script "gendeb.sh" (depends on
+[fpm](https://github.com/jordansissel/fpm)), install it and run the service.
 
 ```
-# export CONTACTME_MAILSERVER="smtp.gmail.com:587"
-# export CONTACTME_PASSWORD="crazypassword"
-# export CONTACTME_MAILBOX="my@email.com"
+# ./gendeb.sh 1.0 1
+# dpkg -i contactme_1.0-1_amd64.deb
 # service contactme start
 ```
 

@@ -9,6 +9,10 @@ stop on runlevel [!2345]
 respawn
 respawn limit 5 10
 
+env CONTACTME_MAILSERVER=smtp.gmail.com:587
+env CONTACTME_PASSWORD=crazypassword
+env CONTACTME_MAILBOX=my@email.com
+
 script
   exec /usr/local/bin/contactme
 end script
