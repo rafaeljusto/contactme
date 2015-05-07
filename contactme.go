@@ -20,6 +20,8 @@ import (
 )
 
 const (
+	logPath = "/var/log/contactme.log"
+
 	burst        = 5.0
 	rate         = 0.00035
 	cleanupSleep = 5 // minutes
@@ -59,17 +61,17 @@ func main() {
 		cli.StringFlag{
 			Name:   "port",
 			EnvVar: "CONTACTME_PORT",
-			Usage:  "Port to listen to (default 80)",
+			Usage:  "Port to listen to (default: 80)",
 		},
 		cli.StringFlag{
 			Name:   "mailserver,s",
 			EnvVar: "CONTACTME_MAILSERVER",
-			Usage:  "E-mail server address with port",
+			Usage:  "E-mail server address with port (e.g. smtp.gmail.com:587)",
 		},
 		cli.StringFlag{
 			Name:   "username,u",
 			EnvVar: "CONTACTME_USERNAME",
-			Usage:  "E-mail server authentication username",
+			Usage:  "E-mail server authentication username (default: same of mailbox)",
 		},
 		cli.StringFlag{
 			Name:   "password,p",
@@ -94,20 +96,33 @@ func main() {
 			port = "80"
 		}
 
+		if username == "" {
+			username = mailbox
+		}
+
 		if mailserver == "" || mailbox == "" {
-			fmt.Println("Missing “mailserver” and/or “mailbox” arguments\n")
+			fmt.Println("missing “mailserver” and/or “mailbox” arguments\n")
 			cli.ShowAppHelp(c)
 			os.Exit(1)
 		}
 
 		if _, err := mail.ParseAddress(mailbox); err != nil {
-			fmt.Println("Invalid “mailbox”!\n")
+			fmt.Printf("invalid mailbox “%s”\n\n", mailbox)
 			cli.ShowAppHelp(c)
 			os.Exit(2)
 		}
 
 		http.HandleFunc("/", handle)
 		log.Fatal(http.ListenAndServe(":"+port, nil))
+	}
+
+	if logFile, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666); err == nil {
+		defer logFile.Close()
+		log.SetOutput(logFile)
+
+	} else {
+		fmt.Printf("error opening log file, "+
+			"so we will use the standard output instead. Details: %s\n", err)
 	}
 
 	app.Run(os.Args)

@@ -1,0 +1,14 @@
+# Upstart job configuration file
+
+description   "ContactMe - Microservice for sending e-mails via HTTP interface"
+author        "Rafael Dantas Justo"
+
+start on runlevel [2345]
+stop on runlevel [!2345]
+
+respawn
+respawn limit 5 10
+
+script
+  exec /usr/local/bin/contactme
+end script

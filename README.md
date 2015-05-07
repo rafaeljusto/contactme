@@ -9,6 +9,7 @@ Easy way to send an e-mail for your "contact me" web form.
 * Limit the number of e-mails from a client in a specific period
 * E-mail encoded in base64
 * Allow plain authentication with mail server
+* Errors and warnings are logged in "/var/log/contactme.log" with fallback for standard output
 
 ## API
 
@@ -36,6 +37,26 @@ Expect a POST request containing the fields:
 | 405    | Only POST requests are allowed       |
 | 427    | Client already sent too many e-mails |
 | 500    | Something went wrong in server-side  |
+
+## Use it
+
+This service has the following parameters to run:
+
+| Parameter  | Environment Varible  | Description                                                      |
+| ---------  | -------------------  | -----------                                                      |
+| port       | CONTACTME_PORT       | Port to listen to (default: 80)                                  |
+| mailserver | CONTACTME_MAILSERVER | E-mail server address with port (e.g. smtp.gmail.com:587)        |
+| username   | CONTACTME_PASSWORD   | E-mail server authentication password (default: same of mailbox) |
+| mailbox    | CONTACTME_MAILBOX    | E-mail address that will receive all the e-mails                 |
+
+It is recommended before running the service to set the environment variables instead of using the
+command line parameters for safety reasons (you don't want your password visible in the process
+list).
+
+Command line example (without using environment variables):
+```
+contactme --port 80 -s smtp.gmail.com:587 -u my@email.com -p "crazypassword" -m my@email.com
+```
 
 ## Example
 
