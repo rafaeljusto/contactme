@@ -51,12 +51,21 @@ This service has the following parameters to run:
 
 It is recommended before running the service to set the environment variables instead of using the
 command line parameters for safety reasons (you don't want your password visible in the process
-list).
+list). And using environment variables allows you to use the service via upstart!
 
 Command line example (without using environment variables):
 
 ```
-contactme --port 80 -s smtp.gmail.com:587 -u my@email.com -p "crazypassword" -m my@email.com
+# contactme -s smtp.gmail.com:587 -p "crazypassword" -m my@email.com
+```
+
+Upstart example:
+
+```
+# export CONTACTME_MAILSERVER="smtp.gmail.com:587"
+# export CONTACTME_PASSWORD="crazypassword"
+# export CONTACTME_MAILBOX="my@email.com"
+# service contactme start
 ```
 
 ## E-mail template
