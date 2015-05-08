@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/rafaeljusto/contactme/Godeps/_workspace/src/github.com/codegangsta/cli"
-	"gopkg.in/yaml.v2"
+	"github.com/rafaeljusto/contactme/Godeps/_workspace/src/gopkg.in/yaml.v2"
 )
 
 const (

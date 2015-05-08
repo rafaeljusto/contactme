@@ -9,6 +9,10 @@
 			"ImportPath": "github.com/codegangsta/cli",
 			"Comment": "1.2.0-95-g9b2bd2b",
 			"Rev": "9b2bd2b3489748d4d0a204fa4eb2ee9e89e0ebc6"
+		},
+		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "49c95bdc21843256fb6c4e0d370a05f24a0bf213"
 		}
 	]
 }
