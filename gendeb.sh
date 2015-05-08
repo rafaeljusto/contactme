@@ -26,8 +26,8 @@ if [ -z "$release" ]; then
 fi
 
 install_path=/usr/local/bin
+config_path=/etc/contactme
 tmp_dir=/tmp/contactme
-project_root=$tmp_dir$install_path
 
 workspace=`echo $GOPATH | cut -d: -f1`
 workspace=$workspace/src/github.com/rafaeljusto/contactme
@@ -47,14 +47,14 @@ if [ -d $tmp_dir ]; then
   rm -rf $tmp_dir
 fi
 
-mkdir -p $project_root $project_root/etc/contactme
-mv $workspace/contactme $project_root/
-cp $workspace/contactme.yaml $project_root/etc/contactme/
+mkdir -p $tmp_dir$install_path $tmp_dir$config_path
+mv $workspace/contactme $tmp_dir$install_path/
+cp $workspace/contactme.yaml $tmp_dir$config_path/
 
 fpm -s dir -t deb \
   --exclude=.git -n $pack_name -v "$version" --iteration "$release" --vendor "$vendor" \
   --maintainer "$maintainer" --url $url --license "$license" --description "$description" \
   --deb-upstart $workspace/contactme.upstart \
   --deb-user root --deb-group root \
-  --prefix / -C $tmp_dir usr/local/bin
+  --prefix / -C $tmp_dir usr/local/bin etc/contactme
 
