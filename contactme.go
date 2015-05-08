@@ -267,9 +267,11 @@ func startLog() *os.File {
 	if err != nil {
 		fmt.Printf("error opening log file, "+
 			"so we will use the standard output instead. Details: %s\n", err)
+
+	} else {
+		log.SetOutput(logFile)
 	}
 
-	log.SetOutput(logFile)
 	return logFile
 }
 
