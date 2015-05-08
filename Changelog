@@ -2,11 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased][unreleased]
+## [1.1.0] - 2015-05-08
 ### Added
 - Using configuration file
 
-## [1.0.0] - 2015-05-08
+## [1.0.0] - 2015-05-07
 ### Added
 - Remove undesireble characters (avoid script attacks)
 - Validate client e-mail format
