@@ -44,6 +44,7 @@ This service has the following parameters to run:
 
 | Parameter  | Environment Varible  | Description                                                      |
 | ---------  | -------------------  | -----------                                                      |
+| config     | CONTACTME_CONFIG     | Configuration file (other params have priority)                  |
 | port       | CONTACTME_PORT       | Port to listen to (default: 80)                                  |
 | mailserver | CONTACTME_MAILSERVER | E-mail server address with port (e.g. smtp.gmail.com:587)        |
 | username   | CONTACTME_PASSWORD   | E-mail server authentication password (default: same of mailbox) |
@@ -51,7 +52,7 @@ This service has the following parameters to run:
 
 It is recommended before running the service to set the environment variables instead of using the
 command line parameters for safety reasons (you don't want your password visible in the process
-list). And using environment variables allows you to use the service via upstart!
+list), or use the configuration file.
 
 Command line example (without using environment variables):
 
@@ -59,10 +60,9 @@ Command line example (without using environment variables):
 # contactme -s smtp.gmail.com:587 -p "crazypassword" -m my@email.com
 ```
 
-To use the service with [Upstart](http://en.wikipedia.org/wiki/Upstart) you will need first to edit
-the file "contactme.upstart" and add/change the environment variables with your data. After that
-just generate the Debian package with the script "gendeb.sh" (depends on
-[fpm](https://github.com/jordansissel/fpm)), install it and run the service.
+To use the service with [Upstart](http://en.wikipedia.org/wiki/Upstart) you can generate the Debian
+package with the script "gendeb.sh" (depends on [fpm](https://github.com/jordansissel/fpm)), install
+it in your server, and fill the file "/etc/contactme/contactme.yaml" with your data.
 
 ```
 # ./gendeb.sh 1.0 1

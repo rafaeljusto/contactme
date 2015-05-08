@@ -47,8 +47,9 @@ if [ -d $tmp_dir ]; then
   rm -rf $tmp_dir
 fi
 
-mkdir -p $project_root
+mkdir -p $project_root $project_root/etc/contactme
 mv $workspace/contactme $project_root/
+cp $workspace/contactme.yaml $project_root/etc/contactme/
 
 fpm -s dir -t deb \
   --exclude=.git -n $pack_name -v "$version" --iteration "$release" --vendor "$vendor" \

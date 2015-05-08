@@ -1,0 +1,68 @@
+###################################################
+##         ContactMe configuration file          ##
+###################################################
+
+# Port to listen to (default: 80). The service will always listen on all
+# interfaces
+port: 80
+
+mailserver:
+  # E-mail server address with port
+  address: smtp.gmail.com:587
+
+  # E-mail server authentication username (default: same of mailbox)
+  username: my@email.com
+
+  # E-mail server authentication password. If empty no authentication will be
+  # performed with the mail server
+  password: ""
+
+# E-mail address that will receive all the e-mails
+mailbox: my@email.com
+
+email:
+  # Label that appears in the subject to identify that it was sent via
+  # ContactMe service. When running the service without a configuration file
+  # the prefix used will be "[ContactMe] "
+  subject prefix: "[ContactMe] "
+
+  # Path to the template that the service will use to send the e-mail. You
+  # have two variables that you can show in the template: {{.ClientName}} that
+  # is replaces by the client's name and {{.Message}} that is the message that
+  # the client wrote. By default we use:
+  #
+  #   Client: {{.ClientName}}
+  #   -------------------------------------
+  #   {{.Message}}
+  #   -------------------------------------
+  #
+  #   E-mail sent via ContactMe.
+  #   http://github.com/rafaeljusto/contactme
+  template: |
+    Client: {{.ClientName}}
+    -------------------------------------
+    {{.Message}}
+    -------------------------------------
+  
+    E-mail sent via ContactMe.
+    http://github.com/rafaeljusto/contactme
+
+# File where error and warning messages are wroten (default:
+# /var/log/contactme.log)
+log: /var/log/contactme.log
+
+rate limit:
+  # Initial number of e-mail that a client IP can send (default: 5)
+  burst: 5.0
+
+  # Sum that increases every second, when the accrued value reachs 1, the
+  # client is allowed to send one more e-mail (default: 0.00035)
+  rate: 0.00035
+
+  # Time that an entry will be consider too old and can be removed by the
+  # cleanup job (default: 24 hours)
+  expires: 24h
+
+  # Time that the cleanup job will wait to check for old rate limit entries
+  # (default: 5 minutes)
+  cleanup: 5m
